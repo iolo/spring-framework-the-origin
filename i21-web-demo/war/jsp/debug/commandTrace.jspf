@@ -1,0 +1,23 @@
+
+<%@ page import="com.interface21.web.servlet.*" %>
+
+<br>
+<br>
+
+<br>
+
+
+Handler was '<%= request.getAttribute(ControllerServlet.HANDLER_REQUEST_ATTRIBUTE)%>'
+
+
+<br/>
+
+Handler adapter was '<%= request.getAttribute(ControllerServlet.HANDLER_ADAPTER_REQUEST_ATTRIBUTE)%>'
+
+
+<br/>
+
+View name is '<%= request.getAttribute(ControllerServlet.VIEW_NAME_ATTRIBUTE)%>'
+
+
+<br/>

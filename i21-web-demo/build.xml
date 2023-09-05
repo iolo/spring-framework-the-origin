@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<!--
+	Ant build script for minimal MVC framework application with
+	"Expert One-in-One J2EE", Wrox Press, 2002.
+	Author: Rod Johnson
+	
+	Requirements: 
+		J2SDKEE 1.2 or 1.3: this is required to build
+-->
+
+<project name="i21-web-demo" default="usage" basedir=".">
+
+	<!-- ===========================================================-->
+	<!-- Change these absolute path settings to match OS and file paths	-->
+	<!-- ===========================================================-->
+	
+	<!-- Root directory of the Sun J2EE 1.3 Reference Implementation
+	-->
+	<property name="j2ee.dir" value="/home/rod/j2sdkee1.3.1"/>
+	
+	<!-- Root directory of JBoss 3.0 installation -->
+	<property name="jboss.home" value="/home/rod/servers/jboss-3.0.0"/>
+
+	<property name="tomcat.home" value="/home/rod/servers/jakarta-tomcat-4.1.12"/>
+	
+	<!-- Name of the JBoss server we want to deploy to. JBoss 3.0.0 final,
+	 like BEA WebLogic, can run multiple servers from the one installation.
+	 -->
+	<property name="jboss.server" value="default"/>
+
+	<!-- ===========================================================-->
+	<!-- End absolute path settings									-->
+	<!-- ===========================================================-->
+	
+	<!-- Name of this application -->
+	<property name="name" value="i21-web-demo"/>
+
+	<!-- Location of j2ee.jar from J2EE RI -->
+	<property name="j2ee.jar" value="${j2ee.dir}/lib/j2ee.jar"/>
+
+	<property name="debug" value="on"/>
+
+	<!-- Library directory within project -->
+	<property name="lib.dir" value="lib"/>
+	
+	<property name="dist.dir" value="dist"/>
+
+	<property name="work.dir" value=".build" />
+
+	<property name="classes.dir" value="${work.dir}/classes/" />
+
+
+	<property name="warfile" value="${dist.dir}/${name}.war" />
+	
+	<!--
+		Class path use for compile (and other tasks if necessary)
+	-->
+	<path id="master-classpath">
+		<pathelement location="${j2ee.jar}"/>
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar"/>
+		</fileset>
+
+	</path>
+
+
+	<target name="usage" >
+
+	        <echo message=""/>
+	        <echo message="${name} build file"/>
+	        <echo message="------------------------------------------------------"/>
+	        <echo message=""/>
+	        <echo message=" Available targets are :"/>
+	        <echo message=""/>
+	        <echo message=" war     --> generates the war file"/>
+	        <echo message=" jboss   --> deploy on JBoss (ensure you've modified directory paths for your system) "/>
+		<echo message=" tomcat  --> deploy on Tomcat (ensure you've modified directory paths for your system)" />
+        	<echo message=" " />
+        </target>
+	
+
+	<!-- Delete all binaries and generated distribution units -->
+	<target name="clean">
+		<delete dir="${output.dir}"/>
+	</target>
+		  
+		  
+	
+	<!-- Compile the classes in the WAR -->
+	<target name="build-war" >
+
+		<mkdir dir="${classes.dir}"/>
+		<javac destdir="${classes.dir}" debug="${debug}">
+		<classpath refid="master-classpath"/>
+			<src path="src"/>
+			<include name="**"/>
+		</javac>
+	</target>
+	
+
+	<!-- Create a WAR distribution unit, using the
+		Ant WAR task
+	-->
+	<target name="war" depends="build-war">
+
+		<mkdir dir="${dist.dir}" />
+		  
+		<war warfile="${warfile}"
+			webxml="war/WEB-INF/web.xml">
+			
+			<fileset dir="war" excludes="WEB-INF/**"/>
+			
+			<webinf dir="war/WEB-INF">
+				<!-- This goes in automatically -->
+				<exclude name="web.xml"/>
+			</webinf>
+
+			<!-- Take all the compiled classes from the war -->
+			<classes dir="${classes.dir}">
+				<include name="**/*.class"/>
+			</classes>
+
+			<!-- Take all library files -->
+			<lib dir="${lib.dir}/runtime/common" /> 
+				
+			<!-- Comment out what isn't needed -->
+			<lib dir="${lib.dir}/runtime/jsp-stl" />
+		
+		</war>
+	</target>
+
+	
+	<!-- Deploy on JBoss
+		This simply involves copying the WAR to the JBoss /deploy directory.
+		There is no need to restart JBoss.
+	-->
+	<target name="jboss" depends="war">
+		  <copy todir="${jboss.home}/server/${jboss.server}/deploy"
+			   file="${warfile}"/>
+	  </target>
+
+
+	  <!-- Deploy on Tomcat
+		This simply involves copying the WAR to the Tomcat /webapps directory.
+		You may need to restart Tomcat, depending on how you've configured it.
+	-->
+	<target name="tomcat" depends="war">
+		  <copy todir="${tomcat.home}/webapps"
+			   file="${warfile}"/>
+		<echo message="Deployed WAR on Tomcat. You may need to restart Tomcat, depending on how it's set up." />
+	  </target>
+	  
+	
+
+	<!--
+		Create the distribution (enabling the build process to work)
+	-->
+	<target name="dist" depends="build-war" >
+		<!-- Create time stamp -->
+		<tstamp/>
+
+		<mkdir dir="${dist.dir}" />
+
+		<zip zipfile="${dist.dir}/${name}-${DSTAMP}-${TSTAMP}.zip" update="false"
+		>
+			<zipfileset dir="." >
+				<include name="build.xml"/>
+				<include name="readme.txt"/>
+				<include name="war/**" />
+				<include name="src/**" />
+				<include name="lib/**" />
+			</zipfileset>
+
+		</zip>
+	  </target>
+
+</project>

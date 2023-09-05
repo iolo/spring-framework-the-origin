@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+	Definitions for minimal Interface21 web demo servlet.
+
+	(c) Rod Johnson, 2002.
+	
+	Each <bean> element in this file defines a Java bean instance,
+	providing the necessary class type and property settings.
+	Properties may be set to references to other beans.
+	Type conversion happens automatically.
+	
+	Errors in this file will cause the application to fail to start.
+	Check the log file (the location is defined in the log4j.properties file)
+	for information in this case. Error messages usually display pinpoint the
+	problem precisely.
+	
+	Certain bean names have special significance: e.g. "messageSource",
+	which defines an internationalizable repository for error and
+	other message, and "viewResolver", which defines where views
+	are defined.
+	
+	See also: /WEB-INF/classes/views.properties, which
+	defines the views used by this application. Views are
+	also defined as Java beans, using the same underlying implementation.
+	
+	For dynamic properties, create one bean that updates the properties it
+	exposes and give other beans access to it.
+-->
+
+<beans>		
+
+	<!-- ===========================================================-->
+	<!-- Message source												-->
+	<!-- ===========================================================-->
+	<!-- Messages will be taken from classpath.
+		Place file under /WEB-INF/classes in the WAR
+		CAN OVERRIDE
+	-->
+	<!--
+	<bean name="messageSource" class="com.interface21.context.support.ResourceBundleMessageSource">	
+		<property name="basename">ticket-servlet-messages</property>										
+	</bean>
+	-->
+	
+	
+	<!-- ===========================================================-->
+	<!-- View resolver. Required by web framework.					-->
+	<!-- ===========================================================-->
+	<bean name="viewResolver" class="com.interface21.web.servlet.view.ResourceBundleViewResolver">			
+		<!-- A false value is for development only: REPLACE BY true OR COMMENT OUT IN PRODUCTION OR 
+			 performance will be severely impacted. **************
+		-->
+		<property name="cache">true</property>
+
+
+		<!-- 
+			We can use this to avoid conflict with other command servlets.
+			It's the name of the resource bundle loaded from the classpath.
+		-->		
+		<property name="basename">views</property>
+			
+	</bean>
+	
+
+	<!-- ===========================================================-->
+	<!-- Application beans				-->
+	<!-- ===========================================================-->
+	<!--
+		Bean used to validate customer input in form example
+	-->
+	<bean name="customerValidator" 
+		class="com.wrox.expertj2ee.ticket.customer.DefaultUserValidator" >
+		<property name="minEmail">6</property>
+		<property name="maxEmail">64</property>
+	</bean>
+	
+	
+	
+	<!-- ===========================================================-->
+	<!-- Listeners to this servlet only								-->
+	<!-- ===========================================================-->
+
+	<!--
+		Use this listener for debugging only:
+		comment out in production.
+	-->
+	<bean name="consoleListener" 
+		class="com.interface21.context.support.ConsoleListener"
+	/>	
+
+
+
+	<!-- ===========================================================-->
+	<!-- URL mappings for web framework.							-->
+	<!-- ===========================================================-->
+	<!--
+		Simple HandlerMapping implementation that maps from request URL
+		to handler bean name in this application context.
+		Handlers can have any bean name, and are applied in alphabetical order by bean name (
+		hence "a.urlMap" will be applied before "b.urlMap").
+		This application uses only one handler map.
+	-->
+	<bean name="a.urlMap" 
+		class="com.interface21.web.servlet.UrlHandlerMapping">	
+		<property name="mappings">
+			/simple.html=simpleController
+			/hello.html=helloController
+			/cache.html=cacheController
+			/command.html=commandController
+			/person.html=personController
+
+			/debug.html=multiActionController
+			/build.html=multiActionController
+			
+			/cust.html=customerController
+			/cust2.html=customerController2
+		</property>
+	</bean>
+	
+	
+	<!-- ===========================================================-->
+		<!-- Controllers for ticket application	
+		-->
+	<!-- ===========================================================-->
+	
+
+	<bean name="simpleController" 
+		class="simple.SimpleController" >
+	</bean>
+	
+
+	<!--
+		Illustrates use of a JavaBean property. See page 482.
+	-->
+	<bean name="helloController" 
+		class="simple.HelloController" >
+		<property name="name">The Bean Controller</property>
+	</bean>
+	
+	<bean name="commandController" 
+		class="command.SimpleCommandController" >
+	</bean>
+		
+	<bean name="personController" 
+		class="form.PersonInput" >
+	</bean>
+		
+		
+	<!--
+		Controller that hadles both form and
+	-->
+	<bean name="customerController" 
+		class="form.CustomerInput" >
+		<property name="validator" beanRef="true">customerValidator</property>
+		<property name="beanName">user</property>		<!-- Name of the bean we're populating -->
+		<property name="formView">customerForm</property>	<!-- Name of the form view, as defined by our ViewResolver -->
+		<property name="successView">displayCustomerView</property>	<!-- Name of the success view, displayed on successful form submission -->
+	</bean>
+	
+	
+	<bean name="customerController2" 
+		class="form.CustomerInputInSession" >
+		<property name="validator" beanRef="true">customerValidator</property>
+		<property name="beanName">user</property>
+		<property name="formView">customerForm</property>
+		<property name="successView">displayCustomerView</property>
+	</bean>
+		
+	
+	<bean name="cacheController"
+		class="cache.CacheController" >
+	</bean>
+
+
+
+	<!--
+		Map from application URLs to method names in the MultiActionController class.
+		Analogous to Struts LookupDispatchAction approach.
+		See page 485 for discussion of this framework capability.
+	-->
+	<bean name="multiActionMethodNameResolver"
+		class="com.interface21.web.servlet.mvc.multiaction.PropertiesMethodNameResolver">
+		<property name="mappings">
+			/debug.html=handleDebugRequest
+			/build.html=buildResponse
+		</property>
+	</bean>
+
+	<!--
+		Controller bean that handles multiple request types.
+		See page 484 for discussion of this framework capability.
+	-->
+	<bean name="multiActionController"
+		class="multiaction.MultiActionDemo" >
+
+		<!-- Reference to another bean in this factory.
+			We can use this syntax to define any references
+			among our application objects.
+		 -->
+		<property name="methodNameResolver" beanRef="true">multiActionMethodNameResolver</property>
+	</bean>
+
+</beans>		

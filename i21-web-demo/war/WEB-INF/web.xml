@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE web-app PUBLIC '-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN' 'http://java.sun.com/dtd/web-app_2_3.dtd'>
+
+<!--
+	Standard deployment descriptor for bare bones demo web application as discussed in
+	"Expert One-on-One J2EE", p 481.
+	
+	(c) Rod Johnson, 2002.
+-->
+
+
+<web-app>
+	<display-name>i21-demo-webapp</display-name>
+	<description>Demo for Interface21 web application</description>
+	
+	
+	<!-- Argument for XmlWebApplicationContext (see below) -->
+	<context-param>
+		<param-name>configUrl</param-name>
+  		<param-value>/WEB-INF/applicationContext.xml</param-value>   	
+	</context-param>
+     
+
+	<!-- This servlet must be loaded first
+	 to create the WebApplicationContext.
+	 This is the parent context shared by all servlets
+	 in this web application.
+	 -->
+	<servlet>
+		<servlet-name>config</servlet-name>
+		<servlet-class>com.interface21.web.context.ContextLoaderServlet</servlet-class>
+		<init-param>
+			<param-name>contextClass</param-name>
+			<param-value>com.interface21.web.context.support.XmlWebApplicationContext</param-value>   		
+		</init-param>	
+		
+		<!-- This is essential. Everything else depends on this servlet. -->
+		<load-on-startup>1</load-on-startup>
+	  </servlet>
+  
+  
+  
+  <!-- 
+  	This is the controller servlet that handles all incoming requests,
+  	delegating work to Controller implementations according to mappings in the
+  	ticket-servlet.xml file.
+  	Our framework supports multiple controllers, but we only need one for
+  	the demo application.
+  -->
+  <servlet>
+        	<servlet-name>test</servlet-name>
+        	<servlet-class>com.interface21.web.servlet.ControllerServlet</servlet-class>
+        	
+        	<!-- Causes informative attributes to be placed in request. Can be
+        	 commented out in production, but won't affect performance much or compromise security
+        	 -->
+        	<init-param>
+  		<param-name>debug</param-name>
+  		<param-value>false</param-value>   		
+  		</init-param>	
+  		
+  		<load-on-startup>2</load-on-startup>  		
+  </servlet>  
+  
+  
+  
+  	<!-- 
+  		Mapping of all .html URLs onto the controller servlet.
+  		
+  		******************************************************
+  		WARNING: If you want static .html resources to be served,
+  		this will intercept them. 
+  		Alternatives are to name the static content *.htm,
+  		or to use a different extension (such as Struts .do
+  		or Maverick .m). 
+  		******************************************************
+  	-->
+   <servlet-mapping>
+	<servlet-name>test</servlet-name>
+	<url-pattern>*.html</url-pattern>
+  </servlet-mapping>
+ 
+  
+
+<session-config>
+<session-timeout>60</session-timeout>
+</session-config>
+
+<!--
+	Unfortunately the Servlet API doesn't let us map
+	a welcome page onto a virtual URL (like one handled by
+	a controller).  If we want a virtual welcome page,
+	we must use a JSP to forward to it.
+-->
+<welcome-file-list>
+ <welcome-file>index.jsp</welcome-file>
+</welcome-file-list>
+
+   
+   	<!-- 
+   		Display this page to handle unexpected exceptions gracefully.
+   		Otherwise we get whatever error page the container chooses.
+   		-->
+     <error-page>
+            <exception-type>java.lang.Exception</exception-type>
+            <location>/jsp/uncaughtException.jsp</location>
+  </error-page>
+  
+  
+
+  <taglib>
+		<taglib-uri>/i21</taglib-uri>
+		<taglib-location>/WEB-INF/tlds/i21/i21.tld</taglib-location>
+  </taglib>
+  
+  <!-- JSP STL 1.0 -->
+  <taglib>
+		<taglib-uri>/c</taglib-uri>
+		<taglib-location>/WEB-INF/tlds/jsp-stl/c.tld</taglib-location>
+  </taglib>
+  
+
+  <taglib>
+  		<taglib-uri>/fmt</taglib-uri>
+  		<taglib-location>/WEB-INF/tlds/jsp-stl/fmt.tld</taglib-location>
+  </taglib>
+
+  
+  
+</web-app>
