@@ -15,3 +15,7 @@ https://www.wiley.com/en-us/Expert+One+on+One+J2EE+Development+without+EJB-p-978
 
 - spring-jpetstore
 
+## see also
+
+- https://github.com/iolo/spring-framework-i21
+
